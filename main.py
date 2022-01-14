@@ -31,12 +31,26 @@ def quote_message(message):
 @bot.callback_query_handler(func= lambda call: True)
 def answer(call):
     if call.data == 'yes':
-        answer = 'yes'
+        makoup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        item_live = types.KeyboardButton('Жизнь')
+        item_l0ve = types.KeyboardButton('Любовь')
+
+        makoup_reply.add(item_live, item_l0ve)
+        bot.send_message(call.message.chat.id, 'Какая у цитаты тема?',
+                         reply_markup=makoup_reply)
     else:
         answer = 'no'
     bot.send_message(call.message.chat.id, answer)
 
-@bot.message_handler(commands=['test'])
+@bot.message_handler(content_types=['text'])
+def get_text(message):
+    if message.text == 'Жизнь':
+        bot.send_message(message.chat.id, 'жизнь')
+    else:
+        bot.send_message(message.chat.id, 'любовь')
+
+
+@bot.message_handler(commands=['quota'])
 def start_message(message):
     markup = telebot.types.InlineKeyboardMarkup()
     markup.add(telebot.types.InlineKeyboardButton(text='Три', callback_data=3))
