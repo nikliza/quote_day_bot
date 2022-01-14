@@ -14,6 +14,11 @@ bot = telebot.TeleBot(BOT_TOKEN)
 response = requests.get('http://api.forismatic.com/api/1.0/?method=getQuote&format=text')
 print(response.text)
 
+@bot.message_handler(commands=['quote'])
+def start_message(message):
+    response = requests.get('http://api.forismatic.com/api/1.0/?method=getQuote&format=text')
+    bot.send_message(message.chat.id, response.text)
+
 
 @bot.message_handler(commands=['start'])
 def quote_message(message):
@@ -36,10 +41,6 @@ def answer(call):
         bot.reply_to(call, call.data)
 
 
-@bot.message_handler(commands=['quote'])
-def start_message(message):
-    response = requests.get('http://api.forismatic.com/api/1.0/?method=getQuote&format=text')
-    bot.send_message(message.chat.id, response.text)
 
 
 bot.polling(none_stop=True)
