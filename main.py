@@ -16,11 +16,6 @@ print(response.text)
 
 
 @bot.message_handler(commands=['start'])
-def start_message(message):
-    response = requests.get('http://api.forismatic.com/api/1.0/?method=getQuote&format=text')
-    bot.send_message(message.chat.id, response.text)
-
-@bot.message_handler(commands=['quote'])
 def quote_message(message):
     response = requests.get('http://api.forismatic.com/api/1.0/?method=getQuote&format=text')
     bot.send_message(message.chat.id, response.text)
@@ -39,5 +34,12 @@ def answer(call):
         bot.reply_to(call, call.data)
     else:
         bot.reply_to(call, call.data)
+
+
+@bot.message_handler(commands=['quote'])
+def start_message(message):
+    response = requests.get('http://api.forismatic.com/api/1.0/?method=getQuote&format=text')
+    bot.send_message(message.chat.id, response.text)
+
 
 bot.polling(none_stop=True)
