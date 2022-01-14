@@ -8,10 +8,11 @@ from flask import Flask, request
 from telebot import types
 
 
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
 bot = telebot.TeleBot(BOT_TOKEN)
 server = Flask(__name__)
-
-
 
 response = requests.get('http://api.forismatic.com/api/1.0/?method=getQuote&format=text')
 print(response.text)
@@ -23,9 +24,4 @@ def start_message(message):
     bot.send_message(message.chat.id, response.text)
 
 
-@server.route(f"/{BOT_TOKEN}", methods=["POST"])
-def redirect_message():
-    json_string = request.get_data().decode("utf-8")
-    update = telebot.types.Update.de_json(json_string)
-    bot.process_new_updates([update])
-    return "!",
+
