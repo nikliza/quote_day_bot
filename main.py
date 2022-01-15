@@ -1,10 +1,10 @@
 import os
 
 from flask import Flask, request
-
+from config import *
 import telebot
 
-TOKEN = '<api_token>'
+
 bot = telebot.TeleBot(TOKEN)
 server = Flask(__name__)
 
@@ -30,7 +30,7 @@ def getMessage():
 @server.route("/")
 def webhook():
     bot.remove_webhook()
-    bot.set_webhook(url='https://your_heroku_project.com/' + TOKEN)
+    bot.set_webhook(url=APP_URL)
     return "!", 200
 
 
