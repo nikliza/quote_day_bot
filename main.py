@@ -1,62 +1,38 @@
 import os
-import telebot
-import logging
-import psycopg2
-import requests
-from config import *
+
 from flask import Flask, request
-from telebot import types
 
+import telebot
 
-bot = telebot.TeleBot(BOT_TOKEN)
-
-
-response = requests.get('http://api.forismatic.com/api/1.0/?method=getQuote&format=text')
-print(response.text)
+TOKEN = '<api_token>'
+bot = telebot.TeleBot(TOKEN)
+server = Flask(__name__)
 
 
 @bot.message_handler(commands=['start'])
-def quote_message(message):
-    response = requests.get('http://api.forismatic.com/api/1.0/?method=getQuote&format=text')
-    bot.send_message(message.chat.id, response.text)
-    makup_inline = types.InlineKeyboardMarkup()
-    item_yes = types.InlineKeyboardButton(text = 'ДА', callback_data='yes')
-    item_no = types.InlineKeyboardButton(text='НЕТ', callback_data='no')
-
-    makup_inline.add(item_yes, item_no)
-    bot.send_message(message.chat.id, 'Вам понравилась цитата?',
-                     reply_markup=makup_inline
-                     )
-
-@bot.callback_query_handler(func= lambda call: True)
-def answer(call):
-    if call.data == 'yes':
-        makoup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        item_live = types.KeyboardButton('Жизнь')
-        item_l0ve = types.KeyboardButton('Любовь')
-
-        makoup_reply.add(item_live, item_l0ve)
-        bot.send_message(call.message.chat.id, 'Какая у цитаты тема?',
-                         reply_markup=makoup_reply)
-    else:
-        answer = 'no'
-    bot.send_message(call.message.chat.id, answer)
-
-@bot.message_handler(content_types=['text'])
-def get_text(message):
-    if message.text == 'Жизнь':
-        bot.send_message(message.chat.id, 'жизнь')
-    else:
-        bot.send_message(message.chat.id, 'любовь')
+def start(message):
+    bot.reply_to(message, 'Hello, ' + message.from_user.first_name)
 
 
-@bot.message_handler(commands=['quota'])
-def start_message(message):
-    markup = telebot.types.InlineKeyboardMarkup()
-    markup.add(telebot.types.InlineKeyboardButton(text='Три', callback_data=3))
-    markup.add(telebot.types.InlineKeyboardButton(text='Четыре', callback_data=4))
-    markup.add(telebot.types.InlineKeyboardButton(text='Пять', callback_data=5))
-    bot.send_message(message.chat.id, text="Какая средняя оценка была у Вас в школе?", reply_markup=markup)
+@bot.message_handler(func=lambda message: True, content_types=['text'])
+def echo_message(message):
+    bot.reply_to(message, message.text)
 
 
-bot.polling(none_stop=True)
+@server.route('/' + TOKEN, methods=['POST'])
+def getMessage():
+    json_string = request.get_data().decode('utf-8')
+    update = telebot.types.Update.de_json(json_string)
+    bot.process_new_updates([update])
+    return "!", 200
+
+
+@server.route("/")
+def webhook():
+    bot.remove_webhook()
+    bot.set_webhook(url='https://your_heroku_project.com/' + TOKEN)
+    return "!", 200
+
+
+if __name__ == "__main__":
+    server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
