@@ -64,7 +64,7 @@ def start(message):
     btn2 = types.KeyboardButton("/quota")
     btn3 = types.KeyboardButton("/select")
     markup.add(btn1, btn2, btn3)
-    bot.send_message(message.chat.id, reply_markup=markup)
+    bot.send_message(message.chat.id, 'Команды: \n\n \\quota - новая цитата \n\n \\stat - статистика \n\n \\select - подбор цитаты', reply_markup=markup)
 
 @bot.message_handler(commands=["stat"])
 def start(message):
