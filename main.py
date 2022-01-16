@@ -57,6 +57,14 @@ item_success = types.InlineKeyboardButton(text='УСПЕХ', callback_data='succ
 item_other = types.InlineKeyboardButton(text='ДРУГОЕ', callback_data='other_select')
 makup_inline5.add(item_love, item_success, item_other)
 
+@bot.message_handler(commands=["start"])
+def start(message):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    btn1 = types.KeyboardButton("/stat")
+    btn2 = types.KeyboardButton("/quota")
+    btn3 = types.KeyboardButton("/select")
+    markup.add(btn1, btn2, btn3)
+    bot.send_message(message.chat.id, 'Команды:', reply_markup=markup)
 
 @bot.message_handler(commands=["stat"])
 def start(message):
