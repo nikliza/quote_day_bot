@@ -25,7 +25,7 @@ def quota_text():
 
 def quota_id(quota):
     db_object = db_connection.cursor()
-    db_object.execute(f"SELECT id FROM quotas WHERE quota = '{quota}'")
+    db_object.execute("SELECT id FROM quotas WHERE quota = %s", (quota,))
     result = db_object.fetchone()
     return result
 
@@ -65,13 +65,13 @@ def answer(call):
     chat_id = call.message.chat.id
     answer = ''
     id = quota_id(last_quota)
-    user_id = call.from_user.id
+    user_id = int(call.from_user.id)
     db_object = db_connection.cursor()
 
     if call.data == 'yes':
-        db_object.execute(f"UPDATE users SET likes = likes + 1 WHERE id = {user_id}")
+        db_object.execute("UPDATE users SET likes = likes + 1 WHERE id = %s", (user_id,))
         db_connection.commit()
-        db_object.execute(f"UPDATE quotas SET likes = likes + 1 WHERE id = {id[0]}")
+        db_object.execute("UPDATE quotas SET likes = likes + 1 WHERE id = %s", (id,))
         db_connection.commit()
 
         bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
@@ -83,42 +83,42 @@ def answer(call):
         bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
 
     if call.data == 'good':
-        db_object.execute(f"UPDATE users SET good = good + 1 WHERE id = {user_id}")
+        db_object.execute(f"UPDATE users SET good = good + 1 WHERE id = %s", (user_id,))
         db_connection.commit()
-        db_object.execute(f"UPDATE quotas SET good_mood = good_mood + 1 WHERE id = {id[0]}")
+        db_object.execute(f"UPDATE quotas SET good_mood = good_mood + 1 WHERE id = %s", (id,))
         db_connection.commit()
         bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
         bot.send_message(chat_id, "На какую тему данная цитата?", reply_markup=makup_inline3)
 
     if call.data == 'bad':
-        db_object.execute(f"UPDATE users SET bad = bad + 1 WHERE id = {user_id}")
+        db_object.execute(f"UPDATE users SET bad = bad + 1 WHERE id = %s", (user_id,))
         db_connection.commit()
-        db_object.execute(f"UPDATE quotas SET bad_mood = bad_mood + 1 WHERE id = {id[0]}")
+        db_object.execute(f"UPDATE quotas SET bad_mood = bad_mood + 1 WHERE id = %s", (id,))
         db_connection.commit()
         bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
         bot.send_message(chat_id, "На какую тему данная цитата?", reply_markup=makup_inline3)
 
     if call.data == 'love':
         answer = 'Спасибо за ваши ответы'
-        db_object.execute(f"UPDATE users SET love = love + 1 WHERE id = {user_id}")
+        db_object.execute(f"UPDATE users SET love = love + 1 WHERE id = %s", (user_id,))
         db_connection.commit()
-        db_object.execute(f"UPDATE quotas SET topic_love = topic_love + 1 WHERE id = {id[0]}")
+        db_object.execute(f"UPDATE quotas SET topic_love = topic_love + 1 WHERE id = %s", (id,))
         db_connection.commit()
         bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
 
     if call.data == 'success':
         answer = 'Спасибо за ваши ответы'
-        db_object.execute(f"UPDATE users SET success = success + 1 WHERE id = {user_id}")
+        db_object.execute(f"UPDATE users SET success = success + 1 WHERE id = %s", (user_id,))
         db_connection.commit()
-        db_object.execute(f"UPDATE quotas SET topic_success = topic_success + 1 WHERE id = {id[0]}")
+        db_object.execute(f"UPDATE quotas SET topic_success = topic_success + 1 WHERE id = %s", (id,))
         db_connection.commit()
         bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
 
     if call.data == 'other':
         answer = 'Спасибо за ваши ответы'
-        db_object.execute(f"UPDATE users SET other = other + 1 WHERE id = {user_id}")
+        db_object.execute(f"UPDATE users SET other = other + 1 WHERE id = %s", (user_id,))
         db_connection.commit()
-        db_object.execute(f"UPDATE quotas SET topic_other = topic_other + 1 WHERE id = {id[0]}")
+        db_object.execute(f"UPDATE quotas SET topic_other = topic_other + 1 WHERE id = %s", (id,))
         db_connection.commit()
         bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
 
@@ -247,8 +247,6 @@ def select(message):
                      )
 
 
-
-
 @server.route(f"/{TOKEN}", methods=["POST"])
 def redirect_message():
     json_string = request.get_data().decode("utf-8")
@@ -260,4 +258,5 @@ def redirect_message():
 if __name__ == "__main__":
     bot.remove_webhook()
     bot.set_webhook(url=APP_URL)
-    server.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    server.run(host="0.0.0.0", port = int(os.environ.get("PORT", 5000)))
+
