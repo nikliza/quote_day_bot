@@ -57,6 +57,115 @@ item_success = types.InlineKeyboardButton(text='УСПЕХ', callback_data='succ
 item_other = types.InlineKeyboardButton(text='ДРУГОЕ', callback_data='other_select')
 makup_inline5.add(item_love, item_success, item_other)
 
+
+@bot.callback_query_handler(func= lambda call: True)
+def answer(call):
+    chat_id = call.message.chat.id
+    answer = ''
+    id = quota_id(last_quota)
+    user_id = call.from_user.id
+    db_object = db_connection.cursor()
+
+    if call.data == 'yes':
+        db_object.execute(f"UPDATE users SET likes = likes + 1 WHERE id = {user_id}")
+        db_connection.commit()
+        db_object.execute(f"UPDATE quotas SET likes = likes + 1 WHERE id = {id[0]}")
+        db_connection.commit()
+
+        bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
+        bot.send_message(chat_id, "Как настроение вызывает у вас эта цитата?", reply_markup=makup_inline2)
+
+
+    if call.data == 'no':
+        answer = 'эх'
+        bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
+
+    if call.data == 'good':
+        db_object.execute(f"UPDATE users SET good = good + 1 WHERE id = {user_id}")
+        db_connection.commit()
+        db_object.execute(f"UPDATE quotas SET good_mood = good_mood + 1 WHERE id = {id[0]}")
+        db_connection.commit()
+        bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
+        bot.send_message(chat_id, "На какую тему данная цитата?", reply_markup=makup_inline3)
+
+    if call.data == 'bad':
+        db_object.execute(f"UPDATE users SET bad = bad + 1 WHERE id = {user_id}")
+        db_connection.commit()
+        db_object.execute(f"UPDATE quotas SET bad_mood = bad_mood + 1 WHERE id = {id[0]}")
+        db_connection.commit()
+        bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
+        bot.send_message(chat_id, "На какую тему данная цитата?", reply_markup=makup_inline3)
+
+    if call.data == 'love':
+        answer = 'Спасибо за ваши ответы'
+        db_object.execute(f"UPDATE users SET love = love + 1 WHERE id = {user_id}")
+        db_connection.commit()
+        db_object.execute(f"UPDATE quotas SET topic_love = topic_love + 1 WHERE id = {id[0]}")
+        db_connection.commit()
+        bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
+
+    if call.data == 'success':
+        answer = 'Спасибо за ваши ответы'
+        db_object.execute(f"UPDATE users SET success = success + 1 WHERE id = {user_id}")
+        db_connection.commit()
+        db_object.execute(f"UPDATE quotas SET topic_success = topic_success + 1 WHERE id = {id[0]}")
+        db_connection.commit()
+        bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
+
+    if call.data == 'other':
+        answer = 'Спасибо за ваши ответы'
+        db_object.execute(f"UPDATE users SET other = other + 1 WHERE id = {user_id}")
+        db_connection.commit()
+        db_object.execute(f"UPDATE quotas SET topic_other = topic_other + 1 WHERE id = {id[0]}")
+        db_connection.commit()
+        bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
+
+    if call.data == 'good_select':
+        global s
+        s = 'good'
+        bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
+        bot.send_message(chat_id, "Выберите тему", reply_markup=makup_inline5)
+
+
+    if call.data == 'bad_select':
+        s = 'bad'
+        bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
+        bot.send_message(chat_id, "Выберите тему", reply_markup=makup_inline5)
+
+    if call.data == 'love_select':
+        db_object = db_connection.cursor()
+        if s == 'good':
+            db_object.execute("SELECT quota FROM quotas ORDER BY good_mood, topic_love DESC LIMIT 1")
+            answer = db_object.fetchall()[0][0]
+        else:
+            db_object.execute("SELECT quota FROM quotas ORDER BY bad_mood, topic_love DESC LIMIT 1")
+            answer = db_object.fetchall()[0][0]
+        bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
+
+    if call.data == 'success_select':
+        if s == 'good':
+            db_object.execute("SELECT quota FROM quotas ORDER BY good_mood, topic_love DESC LIMIT 1")
+            answer = db_object.fetchall()[0][0]
+        else:
+            db_object.execute("SELECT quota FROM quotas ORDER BY bad_mood, topic_love DESC LIMIT 1")
+            answer = db_object.fetchall()[0][0]
+        bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
+
+    if call.data == 'other_select':
+        if s == 'good':
+            db_object.execute("SELECT quota FROM quotas ORDER BY good_mood, topic_other DESC LIMIT 1")
+            answer = db_object.fetchall()[0][0]
+        else:
+            db_object.execute("SELECT quota FROM quotas ORDER BY bad_mood, topic_other DESC LIMIT 1")
+            answer = db_object.fetchall()[0][0]
+        bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
+
+    if len(answer):
+        bot.send_message(call.message.chat.id, answer)
+
+
+
+
 @bot.message_handler(commands=["start"])
 def start(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -64,7 +173,7 @@ def start(message):
     btn2 = types.KeyboardButton("/quota")
     btn3 = types.KeyboardButton("/select")
     markup.add(btn1, btn2, btn3)
-    bot.send_message(message.chat.id, 'Команды: \n\n \\quota - новая цитата \n\n \\stat - статистика \n\n \\select - подбор цитаты', reply_markup=markup)
+    bot.send_message(message.chat.id, 'Команды: \n\n /quota - новая цитата \n\n /stat - статистика \n\n /select - подбор цитаты', reply_markup=markup)
 
 @bot.message_handler(commands=["stat"])
 def start(message):
@@ -105,128 +214,6 @@ def start(message):
 
     bot.reply_to(message, reply_message)
 
-@bot.callback_query_handler(func= lambda call: True)
-def answer(call):
-    chat_id = call.message.chat.id
-    answer = ''
-    if call.data == 'yes':
-        id = quota_id(last_quota)
-        user_id = call.from_user.id
-        db_object = db_connection.cursor()
-        db_object.execute(f"UPDATE users SET likes = likes + 1 WHERE id = {user_id}")
-        db_connection.commit()
-        db_object.execute(f"UPDATE quotas SET likes = likes + 1 WHERE id = {id[0]}")
-        db_connection.commit()
-
-        bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
-        bot.send_message(chat_id, "Как настроение вызывает у вас эта цитата?", reply_markup=makup_inline2)
-
-
-    if call.data == 'no':
-        answer = 'эх'
-        bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
-
-    if call.data == 'good':
-        id = quota_id(last_quota)
-        user_id = call.from_user.id
-        db_object = db_connection.cursor()
-        db_object.execute(f"UPDATE users SET good = good + 1 WHERE id = {user_id}")
-        db_connection.commit()
-        db_object.execute(f"UPDATE quotas SET good_mood = good_mood + 1 WHERE id = {id[0]}")
-        db_connection.commit()
-        bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
-        bot.send_message(chat_id, "На какую тему данная цитата?", reply_markup=makup_inline3)
-
-    if call.data == 'bad':
-        id = quota_id(last_quota)
-        user_id = call.from_user.id
-        db_object = db_connection.cursor()
-        db_object.execute(f"UPDATE users SET bad = bad + 1 WHERE id = {user_id}")
-        db_connection.commit()
-        db_object.execute(f"UPDATE quotas SET bad_mood = bad_mood + 1 WHERE id = {id[0]}")
-        db_connection.commit()
-        bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
-        bot.send_message(chat_id, "На какую тему данная цитата?", reply_markup=makup_inline3)
-
-    if call.data == 'love':
-        answer = 'Спасибо за ваши ответы'
-        id = quota_id(last_quota)
-        user_id = call.from_user.id
-        db_object = db_connection.cursor()
-        db_object.execute(f"UPDATE users SET love = love + 1 WHERE id = {user_id}")
-        db_connection.commit()
-        db_object.execute(f"UPDATE quotas SET topic_love = topic_love + 1 WHERE id = {id[0]}")
-        db_connection.commit()
-        bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
-
-    if call.data == 'success':
-        answer = 'Спасибо за ваши ответы'
-        id = quota_id(last_quota)
-        user_id = call.from_user.id
-        db_object = db_connection.cursor()
-        db_object.execute(f"UPDATE users SET success = success + 1 WHERE id = {user_id}")
-        db_connection.commit()
-        db_object.execute(f"UPDATE quotas SET topic_success = topic_success + 1 WHERE id = {id[0]}")
-        db_connection.commit()
-        bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
-
-    if call.data == 'other':
-        answer = 'Спасибо за ваши ответы'
-        id = quota_id(last_quota)
-        user_id = call.from_user.id
-        db_object = db_connection.cursor()
-        db_object.execute(f"UPDATE users SET other = other + 1 WHERE id = {user_id}")
-        db_connection.commit()
-        db_object.execute(f"UPDATE quotas SET topic_other = topic_other + 1 WHERE id = {id[0]}")
-        db_connection.commit()
-        bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
-
-    if call.data == 'good_select':
-        global s
-        s = 'good'
-        bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
-        bot.send_message(chat_id, "Выберите тему", reply_markup=makup_inline5)
-
-
-    if call.data == 'bad_select':
-        s = 'bad'
-        bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
-        bot.send_message(chat_id, "Выберите тему", reply_markup=makup_inline5)
-
-    if call.data == 'love_select':
-        db_object = db_connection.cursor()
-        if s == 'good':
-            db_object.execute("SELECT quota FROM quotas ORDER BY good_mood, topic_love DESC LIMIT 1")
-            answer = db_object.fetchall()[0][0]
-        else:
-            db_object.execute("SELECT quota FROM quotas ORDER BY bad_mood, topic_love DESC LIMIT 1")
-            answer = db_object.fetchall()[0][0]
-        bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
-
-    if call.data == 'success_select':
-        db_object = db_connection.cursor()
-        if s == 'good':
-            db_object.execute("SELECT quota FROM quotas ORDER BY good_mood, topic_love DESC LIMIT 1")
-            answer = db_object.fetchall()[0][0]
-        else:
-            db_object.execute("SELECT quota FROM quotas ORDER BY bad_mood, topic_love DESC LIMIT 1")
-            answer = db_object.fetchall()[0][0]
-        bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
-
-    if call.data == 'other_select':
-        db_object = db_connection.cursor()
-        if s == 'good':
-            db_object.execute("SELECT quota FROM quotas ORDER BY good_mood, topic_other DESC LIMIT 1")
-            answer = db_object.fetchall()[0][0]
-        else:
-            db_object.execute("SELECT quota FROM quotas ORDER BY bad_mood, topic_other DESC LIMIT 1")
-            answer = db_object.fetchall()[0][0]
-        bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
-
-    if len(answer):
-        bot.send_message(call.message.chat.id, answer)
-
-
 
 @bot.message_handler(commands=["quota"])
 def quota(message):
@@ -256,6 +243,4 @@ def select(message):
     bot.send_message(message.chat.id, 'Выберите настроение?',
                      reply_markup=makup_inline4
                      )
-
-
 bot.polling()
