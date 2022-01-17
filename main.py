@@ -244,4 +244,4 @@ def select(message):
     bot.send_message(message.chat.id, 'Выберите настроение?',
                      reply_markup=makup_inline4
                      )
-bot.polling()
+bot.polling(none_stop=True)
