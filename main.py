@@ -10,7 +10,8 @@ db_connection = psycopg2.connect(
     host=HOST,
     user=User,
     password=Password,
-    database=Database
+    database=Database,
+    port=Port
 )
 
 bot = telebot.TeleBot(TOKEN)
