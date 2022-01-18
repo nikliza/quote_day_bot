@@ -30,7 +30,7 @@ def quota_id(quota):
     return result
 
 
-last_quota = quota_text()
+
 
 makup_inline1 = types.InlineKeyboardMarkup()
 item_yes = types.InlineKeyboardButton(text='ДА', callback_data='yes')
@@ -219,6 +219,8 @@ def start(message):
 
 @bot.message_handler(commands=["quota"])
 def quota(message):
+    global last_quota
+    last_quota = quota_text()
 
     db_object = db_connection.cursor()
     user_id = message.from_user.id
