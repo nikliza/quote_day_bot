@@ -198,11 +198,11 @@ def start(message):
     else:
         reply_message = "Вам понравилось " + str(result[0][1]) + ' цитат\n\n'
         if result[0][2] == result[0][3]:
-            reply_message += 'Хорошее и плохое настроение было выброно одинаковое колличество раз\n\n'
+            reply_message += 'Хорошее и плохое настроение было выброно одинаковое колличество раз.\n\n'
         elif result[0][2] > result[0][3]:
-            reply_message += 'Чаще было выбрано хорошее настроние\n\n'
+            reply_message += 'Чаще было выбрано хорошее настроние.\n\n'
         else:
-            reply_message += 'Чаще было выбрано плохое настроние\n\n'
+            reply_message += 'Чаще было выбрано плохое настроние.\n\n'
 
         topics = [result[0][4], result[0][5], result[0][6]]
         topics_words = ['любовь', 'успех', 'другое']
@@ -219,6 +219,7 @@ def start(message):
 
 @bot.message_handler(commands=["quota"])
 def quota(message):
+
     global last_quota
     last_quota = quota_text()
 
